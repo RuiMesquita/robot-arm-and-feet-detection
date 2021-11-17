@@ -13,12 +13,27 @@ def load_data(path):
     test_x = sorted(glob(os.path.join(path, "test", "images", "*.JPG")))
     test_y = sorted(glob(os.path.join(path, "test", "1st_manual", "*.gif")))
 
-    print(train_x)
-    print(train_y)
+    return (train_x, train_y), (test_x, test_y)
+
+def data_augment(images, masks, save_path, augment=True):
+    size = (512, 512)
+
+    for i, (x, y) in tqdm(enumerate(zip(images, masks)), total = len(images)):
+        # name of augmented images
+        name = "aug_img"
 
 
 if __name__== "__main__":
     np.random.seed(42)
 
     """ Load Data """
-    load_data('./feet_data')
+    (train_x, train_y), (test_x, test_y) = load_data('./feet_data')
+
+    """ Crete New Directories for augmented data"""
+    os.mkdir("augmented_data/train/image/")
+    os.mkdir("augmented_data/train/mask/")
+    os.mkdir("augmented_data/test/image/")
+    os.mkdir("augmented_data/test/mask/")
+
+    """ Augment data """
+    data_augment()
