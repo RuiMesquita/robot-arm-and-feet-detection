@@ -8,10 +8,13 @@ from albumentations import HorizontalFlip, VerticalFlip, Rotate
 
 def load_data(path):
     train_x = sorted(glob(os.path.join(path, "training", "images", "*.JPG")))
-    train_y = sorted(glob(os.path.join(path, "training", "1st_manual", "*.gif")))
+    train_y = sorted(glob(os.path.join(path, "training", "2nd_manual", "*.gif")))
 
     test_x = sorted(glob(os.path.join(path, "test", "images", "*.JPG")))
     test_y = sorted(glob(os.path.join(path, "test", "1st_manual", "*.gif")))
+
+    print(train_x)
+    print(train_y)
 
 
 if __name__== "__main__":
