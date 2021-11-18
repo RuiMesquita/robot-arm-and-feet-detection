@@ -20,7 +20,35 @@ def data_augment(images, masks, save_path, augment=True):
 
     for i, (x, y) in tqdm(enumerate(zip(images, masks)), total = len(images)):
         # name of augmented images
-        name = "aug_img"
+        name = "aug"
+
+        # read image 
+        x = cv2.imread(x, cv2.IMREAD_COLOR)
+        y = imageio.mimread(y)[0]
+
+        print(x.shape, y.shape)
+
+        if augment == True:
+            pass
+        else:
+            X = [x]
+            Y = [y]
+        
+        index = 0
+        for i, m in zip(X, Y):
+            i = cv2.resize(i, size)
+            m = cv2.resize(m, size)
+
+            image_name = f'{name}_image_{index}.png'
+            mask_name = f'{name}_mask_{index}.png'
+
+            image_path = os.path.join(save_path, image_name)
+            mask_path = os.path.join(save_path, mask_name)
+
+            cv2.imwrite(image_path, i)
+            cv2.imwrite(mask_path, m)
+
+            index += 1
 
 
 if __name__== "__main__":
