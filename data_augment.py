@@ -1,10 +1,12 @@
-import os 
+import os
+import functions as fnc
 import numpy as np
 import cv2
 from glob import glob
 from tqdm import tqdm
 import imageio
 from albumentations import HorizontalFlip, VerticalFlip, Rotate
+
 
 def load_data(path):
     train_x = sorted(glob(os.path.join(path, "training", "images", "*.JPG")))
@@ -15,35 +17,55 @@ def load_data(path):
 
     return (train_x, train_y), (test_x, test_y)
 
+
 def data_augment(images, masks, save_path, augment=True):
     size = (512, 512)
 
-    for i, (x, y) in tqdm(enumerate(zip(images, masks)), total = len(images)):
+    index = 0
+    for i, (x, y) in tqdm(enumerate(zip(images, masks)), total=len(images)):
         # name of augmented images
         name = "aug"
 
-        # read image 
+        # read image
         x = cv2.imread(x, cv2.IMREAD_COLOR)
         y = imageio.mimread(y)[0]
 
         print(x.shape, y.shape)
 
         if augment == True:
-            pass
+            aug = HorizontalFlip(p=1.0)
+            augmented = aug(image=x, mask=y)
+            x1 = augmented["image"]
+            y1 = augmented["mask"]
+
+            aug = VerticalFlip(p=1.0)
+            augmented = aug(image=x, mask=y)
+            x2 = augmented["image"]
+            y2 = augmented["mask"]
+
+            aug = Rotate(limit=45, p=1.0)
+            augmented = aug(image=x, mask=y)
+            x3 = augmented["image"]
+            y3 = augmented["mask"]
+
+            X = [x, x1, x2, x3]
+            Y = [y, y1, y2, y3]
+            
         else:
             X = [x]
             Y = [y]
-        
-        index = 0
+            
+
         for i, m in zip(X, Y):
             i = cv2.resize(i, size)
             m = cv2.resize(m, size)
 
+            print(index)
             image_name = f'{name}_image_{index}.png'
             mask_name = f'{name}_mask_{index}.png'
 
-            image_path = os.path.join(save_path, image_name)
-            mask_path = os.path.join(save_path, mask_name)
+            image_path = os.path.join(save_path, "images/", image_name)
+            mask_path = os.path.join(save_path, "masks/", mask_name)
 
             cv2.imwrite(image_path, i)
             cv2.imwrite(mask_path, m)
@@ -51,17 +73,20 @@ def data_augment(images, masks, save_path, augment=True):
             index += 1
 
 
-if __name__== "__main__":
+if __name__ == "__main__":
     np.random.seed(42)
 
     """ Load Data """
     (train_x, train_y), (test_x, test_y) = load_data('./feet_data')
 
+    print(f"Train: {len(train_x)} - {len(train_y)}")
+    print(f"Test: {len(test_x)} - {len(test_y)}")
+
     """ Crete New Directories for augmented data"""
-    os.mkdir("augmented_data/train/image/")
-    os.mkdir("augmented_data/train/mask/")
-    os.mkdir("augmented_data/test/image/")
-    os.mkdir("augmented_data/test/mask/")
+    fnc.make_dir("augmented_data/train/images/")
+    fnc.make_dir("augmented_data/train/masks/")
+    fnc.make_dir("augmented_data/test/images/")
+    fnc.make_dir("augmented_data/test/masks/")
 
     """ Augment data """
-    data_augment()
+    data_augment(train_x, train_y, "augmented_data/train/")
