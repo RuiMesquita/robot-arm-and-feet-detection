@@ -90,3 +90,4 @@ if __name__ == "__main__":
 
     """ Augment data """
     data_augment(train_x, train_y, "augmented_data/train/")
+    data_augment(test_x, test_y, "augmented_data/test/", augment=False)
