@@ -1,11 +1,13 @@
 import os
-import functions as fnc
-import numpy as np
-import cv2
 from glob import glob
-from tqdm import tqdm
+
+import cv2
 import imageio
-from albumentations import HorizontalFlip, VerticalFlip, Rotate
+import numpy as np
+from albumentations import HorizontalFlip, Rotate, VerticalFlip
+from tqdm import tqdm
+
+import functions as fnc
 
 
 def load_data(path):
