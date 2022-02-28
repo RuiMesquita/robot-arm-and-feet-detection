@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class conv_block(nn.Module):
 	def __init__(self, in_channels, out_channels):
 		super().__init__()
@@ -8,7 +9,7 @@ class conv_block(nn.Module):
 		self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
 		self.bn1 = nn.BatchNorm2d(out_channels)
 
-		self.conv2 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
+		self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
 		self.bn2 = nn.BatchNorm2d(out_channels)
 
 		self.relu = nn.ReLU()
@@ -21,6 +22,8 @@ class conv_block(nn.Module):
 		x = self.conv2(x)
 		x = self.bn2(x)
 		x = self.relu(x)
+
+		return x
 	
 class encoder_block(nn.Module):
 	def __init__(self, in_channels, out_channels):
@@ -57,7 +60,7 @@ class build_unet(nn.Module):
 		self.e1 = encoder_block(3, 64)
 		self.e2 = encoder_block(64, 128)
 		self.e3 = encoder_block(128, 256)
-		self.e4 = encoder_block(254, 512)
+		self.e4 = encoder_block(256, 512)
 
 		""" Bottleneck """
 		self.b = conv_block(512, 1024)
@@ -65,11 +68,11 @@ class build_unet(nn.Module):
 		""" Decoder """
 		self.d1 = decoder_block(1024, 512)
 		self.d2 = decoder_block(512, 256)
-		self.d1 = decoder_block(256, 128)
-		self.d1 = decoder_block(128, 64)
+		self.d3 = decoder_block(256, 128)
+		self.d4 = decoder_block(128, 64)
 
 		""" Classifier """
-		self.outputs = nn.conv2d(64, 1, kernel_size=2, padding=0)
+		self.outputs = nn.Conv2d(64, 1, kernel_size=1, padding=0)
 
 	def forward(self, inputs):
 		""" Encoder """
