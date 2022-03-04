@@ -1,19 +1,15 @@
-from glob import glob
 import os
-from random import shuffle
-from sched import scheduler
-from tabnanny import verbose
 import time
-
-from functions import seeding, make_dir, epoch_time
-from loss import DiceLoss, DiceBCELoss
-from model import build_unet
-from data import DriveDataset
+from glob import glob
 
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 
+from data import DriveDataset
+from model import build_unet
+from loss import DiceLoss, DiceBCELoss
+from functions import seeding, make_dir, epoch_time
 
 def train(model, loader, optimizer, loss_fn, device):
     epoch_loss = 0.0
@@ -32,7 +28,6 @@ def train(model, loader, optimizer, loss_fn, device):
 
     epoch_loss = epoch_loss/len(loader)
     return epoch_loss
-
 
 def evaluate(model, loader, loss_fn, device):
     epoch_loss = 0.0
@@ -54,7 +49,7 @@ if __name__ == "__main__":
     """ Seeding """
     seeding(42)
 
-    """ Create a directory to store the model """
+    """ Directories """
     make_dir("files")
 
     """ Load dataset """
@@ -64,10 +59,10 @@ if __name__ == "__main__":
     valid_x = sorted(glob("./augmented_data/test/images/*"))
     valid_y = sorted(glob("./augmented_data/test/masks/*"))
 
-    meta_data = f"Dataset Size:\nTrain: {len(train_x)} - Valid: {len(valid_x)}"
-    print(meta_data)
+    data_str = f"Dataset Size:\nTrain: {len(train_x)} - Valid: {len(valid_x)}\n"
+    print(data_str)
 
-    """ Training parameter """
+    """ Hyperparameters """
     H = 512
     W = 512
     size = (H, W)
@@ -80,30 +75,30 @@ if __name__ == "__main__":
     train_dataset = DriveDataset(train_x, train_y)
     valid_dataset = DriveDataset(valid_x, valid_y)
 
-    train_loader = DataLoader (
+    train_loader = DataLoader(
         dataset=train_dataset,
         batch_size=batch_size,
         shuffle=True,
         num_workers=2
     )
 
-    valid_loader = DataLoader (
+    valid_loader = DataLoader(
         dataset=valid_dataset,
         batch_size=batch_size,
         shuffle=False,
         num_workers=2
     )
 
-    device = torch.device("cuda") ## GTX 1660 Ti
+    device = torch.device('cuda')   ## GTX 1060 6GB
     model = build_unet()
     model = model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    scheduler = torch.optim.lr_schedular.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
     loss_fn = DiceBCELoss()
 
     """ Training the model """
-    best_valid_loss = float('inf')
+    best_valid_loss = float("inf")
 
     for epoch in range(num_epochs):
         start_time = time.time()
@@ -113,16 +108,16 @@ if __name__ == "__main__":
 
         """ Saving the model """
         if valid_loss < best_valid_loss:
-            data_str = f'Valid loss improved from {best_valid_loss:2.4f} to {valid_loss:2.4f}. Saving checkpoint: {checkpoint_path}'
+            data_str = f"Valid loss improved from {best_valid_loss:2.4f} to {valid_loss:2.4f}. Saving checkpoint: {checkpoint_path}"
             print(data_str)
 
             best_valid_loss = valid_loss
             torch.save(model.state_dict(), checkpoint_path)
-        
+
         end_time = time.time()
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
         data_str = f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s\n'
         data_str += f'\tTrain Loss: {train_loss:.3f}\n'
         data_str += f'\t Val. Loss: {valid_loss:.3f}\n'
-        print(data_str)   
+        print(data_str)
