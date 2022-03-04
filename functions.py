@@ -29,3 +29,15 @@ def epoch_time(start_time, end_time):
     elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
 
     return elapsed_mins, elapsed_secs
+
+
+""" Save info to txt file """
+def save_to_txt():
+    #TODO implement function
+    pass
+
+
+""" Generate train loss/ val loss graph """
+def generate_graph():
+    #TODO implement function
+    pass
