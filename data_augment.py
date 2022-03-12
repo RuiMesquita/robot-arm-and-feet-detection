@@ -32,7 +32,6 @@ def data_augment(images, masks, save_path, augment=True):
         x = cv2.imread(x, cv2.IMREAD_COLOR)
         y = imageio.mimread(y)[0]
 
-        print(x.shape, y.shape)
 
         if augment == True:
             aug = HorizontalFlip(p=1.0)
@@ -62,12 +61,11 @@ def data_augment(images, masks, save_path, augment=True):
             i = cv2.resize(i, size)
             m = cv2.resize(m, size)
 
-            print(index)
             image_name = f'{name}_image_{index}.png'
             mask_name = f'{name}_mask_{index}.png'
 
-            image_path = os.path.join(save_path, "images/", image_name)
-            mask_path = os.path.join(save_path, "masks/", mask_name)
+            image_path = os.path.join(save_path, "images", image_name)
+            mask_path = os.path.join(save_path, "masks", mask_name)
 
             cv2.imwrite(image_path, i)
             cv2.imwrite(mask_path, m)
