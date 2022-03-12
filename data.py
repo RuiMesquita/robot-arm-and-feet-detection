@@ -22,7 +22,7 @@ class DriveDataset(Dataset):
         image = torch.from_numpy(image)
 
         """ Reading the masks """
-        mask = cv2.imread(self.masks_path[index], cv2.IMREAD_COLOR)
+        mask = cv2.imread(self.masks_path[index], cv2.IMREAD_GRAYSCALE)
         mask = mask/255.0
         mask = np.expand_dims(mask, axis=0)
         mask = mask.astype(np.float32)
