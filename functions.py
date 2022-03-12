@@ -2,6 +2,7 @@ import os
 import random
 import numpy as np
 import torch
+import matplotlib.pyplot as plt
 
 
 """ Create dir if not exists """
@@ -31,13 +32,26 @@ def epoch_time(start_time, end_time):
     return elapsed_mins, elapsed_secs
 
 
-""" Save info to txt file """
-def save_to_txt():
-    #TODO implement function
-    pass
+""" Save epoch progression to txt file """
+def write_training_report(epoch_status):
+    file = open("trainning_report.txt", "a")
+    file.write(epoch_status)
+    file.write("\n")
+    file.close()
 
 
-""" Generate train loss/ val loss graph """
-def generate_graph():
-    #TODO implement function
-    pass
+""" Generate train loss/val loss graph """
+def generate_graph_report(num_epochs, train_loss, valid_loss):
+
+    x = list(range(1, num_epochs + 1))
+
+    plt.plot(x, train_loss, color='r', label='Train Loss')
+    plt.plot(x, valid_loss, color='g', label='Valid Loss')
+
+    plt.xlabel("Number of Epochs")
+    plt.ylabel("Loss")
+    plt.title("Training report | Training Loss vs Validation Loss")
+
+    plt.legend()
+
+    plt.show()
