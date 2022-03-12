@@ -9,7 +9,7 @@ import torch.nn as nn
 from data import DriveDataset
 from model import build_unet
 from loss import DiceLoss, DiceBCELoss
-from functions import seeding, make_dir, epoch_time
+from functions import generate_graph_report, seeding, make_dir, epoch_time, write_training_report
 
 def train(model, loader, optimizer, loss_fn, device):
     epoch_loss = 0.0
@@ -98,6 +98,8 @@ if __name__ == "__main__":
     loss_fn = DiceBCELoss()
 
     """ Training the model """
+    list_train_loss = []
+    list_valid_loss = []
     best_valid_loss = float("inf")
 
     for epoch in range(num_epochs):
@@ -108,8 +110,7 @@ if __name__ == "__main__":
 
         """ Saving the model """
         if valid_loss < best_valid_loss:
-            data_str = f"Valid loss improved from {best_valid_loss:2.4f} to {valid_loss:2.4f}. Saving checkpoint: {checkpoint_path}"
-            print(data_str)
+            data_str = f'Valid loss improved from {best_valid_loss:2.4f} to {valid_loss:2.4f}. Saving checkpoint: {checkpoint_path}\n'
 
             best_valid_loss = valid_loss
             torch.save(model.state_dict(), checkpoint_path)
@@ -117,7 +118,14 @@ if __name__ == "__main__":
         end_time = time.time()
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
-        data_str = f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s\n'
+        data_str += f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s\n'
         data_str += f'\tTrain Loss: {train_loss:.3f}\n'
         data_str += f'\t Val. Loss: {valid_loss:.3f}\n'
         print(data_str)
+
+        """ Store data for the reports """
+        write_training_report(data_str)
+        list_train_loss.append(train_loss)
+        list_valid_loss.append(valid_loss)
+    
+    generate_graph_report(num_epochs, list_train_loss, list_valid_loss)
