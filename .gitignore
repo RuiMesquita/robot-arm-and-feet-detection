@@ -27,6 +27,8 @@ share/python-wheels/
 *.egg
 feet_data/
 augmented_data/
+files/
+results/
 MANIFEST
 
 # PyInstaller
@@ -129,9 +131,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# test file
-testes.py
-
-# large file extensions
-.pth
