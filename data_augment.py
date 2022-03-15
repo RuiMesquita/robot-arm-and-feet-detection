@@ -4,7 +4,7 @@ from glob import glob
 import cv2
 import imageio
 import numpy as np
-from albumentations import HorizontalFlip, Rotate, VerticalFlip
+import albumentations as alb
 from tqdm import tqdm
 
 import functions as fnc
@@ -32,25 +32,39 @@ def data_augment(images, masks, save_path, augment=True):
         x = cv2.imread(x, cv2.IMREAD_COLOR)
         y = imageio.mimread(y)[0]
 
-
+        # increase dataset by performing image and mask manipulations
         if augment == True:
-            aug = HorizontalFlip(p=1.0)
+            aug = alb.HorizontalFlip(p=1.0)
             augmented = aug(image=x, mask=y)
             x1 = augmented["image"]
             y1 = augmented["mask"]
 
-            aug = VerticalFlip(p=1.0)
+            aug = alb.VerticalFlip(p=1.0)
             augmented = aug(image=x, mask=y)
             x2 = augmented["image"]
             y2 = augmented["mask"]
 
-            aug = Rotate(limit=45, p=1.0)
+            aug = alb.Rotate(limit=45, p=1.0)
             augmented = aug(image=x, mask=y)
             x3 = augmented["image"]
             y3 = augmented["mask"]
 
-            X = [x, x1, x2, x3]
-            Y = [y, y1, y2, y3]
+            #TODO check what operations can be remove
+            aug = alb.Compose([
+                alb.OpticalDistortion(),
+                alb.GridDistortion(),
+            ])
+            augmented = aug(image=x, mask=y)
+            x4 = augmented["image"]
+            y4 = augmented["mask"]
+
+            aug = alb.HueSaturationValue(always_apply=True)
+            augmented = aug(image=x, mask=y)
+            x5 = augmented["image"]
+            y5 = augmented["mask"]
+
+            X = [x, x1, x2, x3, x4, x5]
+            Y = [y, y1, y2, y3, y4, y5]
             
         else:
             X = [x]
