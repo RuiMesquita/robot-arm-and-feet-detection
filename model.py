@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+#TODO SegNet, Unet e Deeplab, resunet, Multiresunet
 
 class conv_block(nn.Module):
 	def __init__(self, in_channels, out_channels):

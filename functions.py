@@ -40,6 +40,13 @@ def write_training_report(epoch_status):
     file.close()
 
 
+""" Store metrcis report for each test """
+def write_metrics_report(metrics):
+    file = open("metrics.txt", "a")
+    file.write(metrics)
+    file.close()
+
+
 """ Generate train loss/val loss graph """
 def generate_graph_report(num_epochs, train_loss, valid_loss):
 
@@ -55,3 +62,17 @@ def generate_graph_report(num_epochs, train_loss, valid_loss):
     plt.legend()
 
     plt.show()
+
+
+""" Generate a folder name based in the existing folders """
+def generate_folder_name(folder):
+    number_of_dirs = 0
+    for base, dirs, files in os.walk(folder):
+        print("Searching in:", base)
+        for directories in dirs:
+            number_of_dirs += 1
+            if str(number_of_dirs) in directories:
+                number_of_dirs += 1
+    
+    number_of_dirs += 1
+    return f"report{number_of_dirs:03}"

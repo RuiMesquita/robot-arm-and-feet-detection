@@ -25,7 +25,6 @@ def data_augment(images, masks, save_path, augment=True):
 
     index = 0
     for i, (x, y) in tqdm(enumerate(zip(images, masks)), total=len(images)):
-        # name of augmented images
         name = "aug"
 
         # read image
@@ -49,7 +48,6 @@ def data_augment(images, masks, save_path, augment=True):
             x3 = augmented["image"]
             y3 = augmented["mask"]
 
-            #TODO check what operations can be remove
             aug = alb.Compose([
                 alb.OpticalDistortion(),
                 alb.GridDistortion(),
