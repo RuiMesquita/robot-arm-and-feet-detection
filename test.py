@@ -7,7 +7,7 @@ from glob import glob
 from tqdm import tqdm
 from datetime import datetime
 import torch
-from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score, jaccard_similarity_score
 
 from model import build_unet
 from functions import make_dir, seeding, write_metrics_report, generate_folder_name
@@ -32,7 +32,7 @@ def calculate_metrics(y_true, y_pred):
     score_precision = precision_score(y_true, y_pred)
     score_acc = accuracy_score(y_true, y_pred)
 
-    return [score_jaccard, score_f1, score_recall, score_precision, score_acc]
+    return [score_jaccard, score_f1, score_recall, score_precision, score_acc, iou]
 
 
 def mask_parse(mask):
@@ -116,7 +116,6 @@ if __name__ == "__main__":
         make_dir(f"results/{report_name}")
         cv2.imwrite(f"results/{report_name}/{name}.png", cat_images)
 
-    # TODO iou intersection over union
     # TODO simple blob detector cv2
     jaccard = metrics_score[0]/len(test_x)
     f1 = metrics_score[1]/len(test_x)

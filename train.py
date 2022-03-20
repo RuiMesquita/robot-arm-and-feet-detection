@@ -8,7 +8,7 @@ import torch.nn as nn
 
 from data import DriveDataset
 from model import build_unet
-from loss import DiceLoss, DiceBCELoss
+from loss import DiceBCELoss
 from functions import generate_graph_report, seeding, make_dir, epoch_time, write_training_report
 
 def train(model, loader, optimizer, loss_fn, device):
@@ -127,5 +127,5 @@ if __name__ == "__main__":
         write_training_report(data_str)
         list_train_loss.append(train_loss)
         list_valid_loss.append(valid_loss)
-    
+
     generate_graph_report(num_epochs, list_train_loss, list_valid_loss)
