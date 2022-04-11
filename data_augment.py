@@ -11,11 +11,11 @@ import functions as fnc
 
 
 def load_data(path):
-    train_x = sorted(glob(os.path.join(path, "training", "images", "*.JPG")))
-    train_y = sorted(glob(os.path.join(path, "training", "2nd_manual", "*.gif")))
+    train_x = sorted(glob(os.path.join(path, "train", "images", "*.JPG")))
+    train_y = sorted(glob(os.path.join(path, "train", "masks", "*.JPG")))
 
     test_x = sorted(glob(os.path.join(path, "test", "images", "*.JPG")))
-    test_y = sorted(glob(os.path.join(path, "test", "1st_manual", "*.gif")))
+    test_y = sorted(glob(os.path.join(path, "test", "masks", "*.JPG")))
 
     return (train_x, train_y), (test_x, test_y)
 
@@ -29,7 +29,7 @@ def data_augment(images, masks, save_path, augment=True):
 
         # read image
         x = cv2.imread(x, cv2.IMREAD_COLOR)
-        y = imageio.mimread(y)[0]
+        y = cv2.imread(y, cv2.IMREAD_COLOR)
 
         # increase dataset by performing image and mask manipulations
         if augment == True:
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     np.random.seed(42)
 
     """ Load Data """
-    (train_x, train_y), (test_x, test_y) = load_data('./feet_data')
+    (train_x, train_y), (test_x, test_y) = load_data('./feet_data_9points')
 
     print(f"Train: {len(train_x)} - {len(train_y)}")
     print(f"Test: {len(test_x)} - {len(test_y)}")
