@@ -69,7 +69,7 @@ if __name__ == "__main__":
     batch_size = 2
     num_epochs = 50
     lr = 1e-4
-    checkpoint_path = "files/checkpoint.pth"
+    checkpoint_path = "files/checkpoint_9p.pth"
 
     """ Dataset and loader """
     train_dataset = DriveDataset(train_x, train_y)
@@ -114,6 +114,9 @@ if __name__ == "__main__":
 
             best_valid_loss = valid_loss
             torch.save(model.state_dict(), checkpoint_path)
+        
+        else:
+            data_str = f"Valid loss not improved"
 
         end_time = time.time()
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)
