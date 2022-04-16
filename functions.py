@@ -60,9 +60,9 @@ def generate_graph_report(num_epochs, train_loss, valid_loss):
     plt.title("Training report | Training Loss vs Validation Loss")
 
     plt.legend()
-
+    plt.savefig('training_graph.png', bbox_inches='tight')
     plt.show()
-
+    
 
 """ Generate a folder name based in the existing folders """
 def generate_folder_name(folder):

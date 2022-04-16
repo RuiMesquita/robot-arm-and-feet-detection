@@ -32,7 +32,7 @@ def calculate_metrics(y_true, y_pred):
     score_precision = precision_score(y_true, y_pred)
     score_acc = accuracy_score(y_true, y_pred)
 
-    return [score_jaccard, score_f1, score_recall, score_precision, score_acc, iou]
+    return [score_jaccard, score_f1, score_recall, score_precision, score_acc]
 
 
 def mask_parse(mask):
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     H = 512
     W = 512
     size = (W, H)
-    checkpoint_path = "files/checkpoint.pth"
+    checkpoint_path = "files/checkpoint_9p_binary.pth"
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

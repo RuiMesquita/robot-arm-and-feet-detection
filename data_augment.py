@@ -12,10 +12,10 @@ import functions as fnc
 
 def load_data(path):
     train_x = sorted(glob(os.path.join(path, "train", "images", "*.JPG")))
-    train_y = sorted(glob(os.path.join(path, "train", "masks", "*.JPG")))
+    train_y = sorted(glob(os.path.join(path, "train", "binary_masks", "*.gif")))
 
     test_x = sorted(glob(os.path.join(path, "test", "images", "*.JPG")))
-    test_y = sorted(glob(os.path.join(path, "test", "masks", "*.JPG")))
+    test_y = sorted(glob(os.path.join(path, "test", "binary_masks", "*.gif")))
 
     return (train_x, train_y), (test_x, test_y)
 
@@ -29,7 +29,7 @@ def data_augment(images, masks, save_path, augment=True):
 
         # read image
         x = cv2.imread(x, cv2.IMREAD_COLOR)
-        y = cv2.imread(y, cv2.IMREAD_COLOR)
+        y = imageio.mimread(y)[0]
 
         # increase dataset by performing image and mask manipulations
         if augment == True:

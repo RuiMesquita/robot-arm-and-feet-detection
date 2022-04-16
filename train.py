@@ -69,7 +69,7 @@ if __name__ == "__main__":
     batch_size = 2
     num_epochs = 50
     lr = 1e-4
-    checkpoint_path = "files/checkpoint_9p.pth"
+    checkpoint_path = "files/checkpoint_9p_binary.pth"
 
     """ Dataset and loader """
     train_dataset = DriveDataset(train_x, train_y)
