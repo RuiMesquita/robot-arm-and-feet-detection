@@ -27,7 +27,7 @@ share/python-wheels/
 *.egg
 feet_data/
 feet_data_9points/
-augmented_data/
+data/
 files/
 results/
 MANIFEST

@@ -53,11 +53,11 @@ if __name__ == "__main__":
     make_dir("files")
 
     """ Load dataset """
-    train_x = sorted(glob("./augmented_data/train/images/*"))
-    train_y = sorted(glob("./augmented_data/train/masks/*"))
+    train_x = sorted(glob("./data/train/images/*"))
+    train_y = sorted(glob("./data/train/masks/*"))
 
-    valid_x = sorted(glob("./augmented_data/test/images/*"))
-    valid_y = sorted(glob("./augmented_data/test/masks/*"))
+    valid_x = sorted(glob("./data/test/images/*"))
+    valid_y = sorted(glob("./data/test/masks/*"))
 
     data_str = f"Dataset Size:\nTrain: {len(train_x)} - Valid: {len(valid_x)}\n"
     print(data_str)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         num_workers=2
     )
 
-    device = torch.device('cuda')   ## GTX 1060 6GB
+    device = torch.device('cuda')   ## GTX 1660-TI 6GB
     model = build_unet()
     model = model.to(device)
 

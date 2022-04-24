@@ -95,11 +95,11 @@ if __name__ == "__main__":
     print(f"Test: {len(test_x)} - {len(test_y)}")
 
     """ Crete New Directories for augmented data"""
-    fnc.make_dir("augmented_data/train/images/")
-    fnc.make_dir("augmented_data/train/masks/")
-    fnc.make_dir("augmented_data/test/images/")
-    fnc.make_dir("augmented_data/test/masks/")
+    fnc.make_dir("data/train/images/")
+    fnc.make_dir("data/train/masks/")
+    fnc.make_dir("data/test/images/")
+    fnc.make_dir("data/test/masks/")
 
     """ Augment data """
-    data_augment(train_x, train_y, "augmented_data/train/")
-    data_augment(test_x, test_y, "augmented_data/test/", augment=False)
+    data_augment(train_x, train_y, "data/train/")
+    data_augment(test_x, test_y, "data/test/", augment=False)

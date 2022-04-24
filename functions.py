@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+import cv2
 
 
 """ Create dir if not exists """
@@ -76,3 +77,12 @@ def generate_folder_name(folder):
     
     number_of_dirs += 1
     return f"report{number_of_dirs:03}"
+
+""" Blob detection function """
+def get_image_keypoints(mask):
+    inv_image = cv2.bitwise_not(mask)
+    detector = cv2.SimpleBlobDetector_create()
+    
+    return detector.detect(inv_image)
+
+
