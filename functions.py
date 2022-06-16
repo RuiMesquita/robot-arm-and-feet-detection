@@ -75,7 +75,6 @@ def generate_folder_name(folder):
             if str(number_of_dirs) in directories:
                 number_of_dirs += 1
     
-    number_of_dirs += 1
     return f"report{number_of_dirs:03}"
 
 """ Blob detection function """

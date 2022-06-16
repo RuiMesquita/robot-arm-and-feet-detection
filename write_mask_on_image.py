@@ -1,6 +1,4 @@
 import os
-import time
-from operator import add
 import numpy as np
 import cv2
 from glob import glob
