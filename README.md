@@ -13,6 +13,11 @@ List available environments with:
 conda info --envs
 ```
 
+Create environment with:
+```bash
+conda env create -prefix venv/<env-name> --file venv/environment.yaml
+```
+
 Activate environment with:
 ```bash
 conda activate <environment>
@@ -20,7 +25,7 @@ conda activate <environment>
 
 To add more dependencies to the project edit the environment.yaml file in venv directory and update the environment with the following command:
 ```bash
-conda env update --file venv/environment.yaml --prune
+conda env update -prefix venv/<env-name> --file venv/environment.yaml --prune
 ```
 
 Deactivate the current environment with:
