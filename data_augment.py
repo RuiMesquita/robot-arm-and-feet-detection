@@ -1,13 +1,12 @@
 import os
-from glob import glob
-
+import functions as fnc
 import cv2
 import imageio
 import numpy as np
 import albumentations as alb
-from tqdm import tqdm
 
-import functions as fnc
+from tqdm import tqdm
+from glob import glob
 
 
 def load_data(path):
@@ -32,7 +31,7 @@ def data_augment(images, masks, save_path, augment=True):
         y = imageio.mimread(y)[0]
 
         # increase dataset by performing image and mask manipulations
-        if augment == True:
+        if augment:
             aug = alb.HorizontalFlip(p=1.0)
             augmented = aug(image=x, mask=y)
             x1 = augmented["image"]
@@ -63,11 +62,10 @@ def data_augment(images, masks, save_path, augment=True):
 
             X = [x, x1, x2, x3, x4, x5]
             Y = [y, y1, y2, y3, y4, y5]
-            
+
         else:
             X = [x]
             Y = [y]
-            
 
         for i, m in zip(X, Y):
             i = cv2.resize(i, size)

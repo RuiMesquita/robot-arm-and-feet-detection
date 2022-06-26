@@ -1,5 +1,4 @@
 import cv2
-import torch
 import numpy as np
 from model import build_unet
 import functions as fnc
@@ -7,10 +6,12 @@ from glob import glob
 from tqdm import tqdm
 import torch
 
+
 def mask_parse(mask):
     mask = np.expand_dims(mask, axis=-1)
     mask = np.concatenate([mask, mask, mask], axis=-1)
     return mask
+
 
 if __name__ == "__main__":
     """ seeding """
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     H = 512
     W = 512
     size = (W, H)
-    checkpoint_path = "files/checkpoint_9p_binary.pth"
+    checkpoint_path = "target/model_1.3.0.pth"
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -85,4 +86,3 @@ if __name__ == "__main__":
 
             fnc.make_dir(f'results/{report_name}')
             cv2.imwrite(f"results/{report_name}/{name}.png", image_overlayed)
-        

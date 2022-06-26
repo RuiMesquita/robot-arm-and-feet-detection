@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL target
 __pycache__/
 *.py[cod]
 *$py.class
@@ -28,12 +28,12 @@ share/python-wheels/
 feet_data/
 feet_data_9points/
 data/
-files/
+target/
 results/
 MANIFEST
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
+#  Usually these target are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
@@ -103,7 +103,7 @@ __pypackages__/
 celerybeat-schedule
 celerybeat.pid
 
-# SageMath parsed files
+# SageMath parsed target
 *.sage.py
 
 # Environments

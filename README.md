@@ -1,14 +1,29 @@
-# Feet Detection using u-net segmentation
+## Feet Detection using u-net segmentation
+
+---
 
  (project-summary)
 
-## install dependencies:
- $ pip install -r <requirments.txt>
 
+## Get started
+### Activate environment:
 
-## Setting up conda env
-- To use pytorch, conda envirnoment is a must, other envs also work but conda's 
-  already cames with pre-installed packages wich are also needed to run pytorch
+List available environments with:
+```bash
+conda info --envs
+```
 
-  - If you already have a conda env, you can activate it with:
-    $ activate conda -> (Note that this command requires admin privileges)
+Activate environment with:
+```bash
+conda activate <environment>
+```
+
+To add more dependencies to the project edit the environment.yaml file in venv directory and update the environment with the following command:
+```bash
+conda env update --file venv/environment.yaml --prune
+```
+
+Deactivate the current environment with:
+```bash
+conda deactivate
+```

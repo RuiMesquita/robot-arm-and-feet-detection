@@ -5,8 +5,9 @@ import torch
 import matplotlib.pyplot as plt
 import cv2
 
-
 """ Create dir if not exists """
+
+
 def make_dir(path):
     if os.path.exists(path):
         print("The Specified dir already exists")
@@ -15,6 +16,8 @@ def make_dir(path):
 
 
 """ Seeding the randomness """
+
+
 def seeding(seed):
     random.seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
@@ -25,6 +28,8 @@ def seeding(seed):
 
 
 """ calculate the time taken """
+
+
 def epoch_time(start_time, end_time):
     elapsed_time = end_time - start_time
     elapsed_mins = int(elapsed_time / 60)
@@ -34,14 +39,18 @@ def epoch_time(start_time, end_time):
 
 
 """ Save epoch progression to txt file """
+
+
 def write_training_report(epoch_status):
-    file = open("trainning_report.txt", "a")
+    file = open("training_report.txt", "a")
     file.write(epoch_status)
     file.write("\n")
     file.close()
 
 
-""" Store metrcis report for each test """
+""" Store metrics report for each test """
+
+
 def write_metrics_report(metrics):
     file = open("metrics.txt", "a")
     file.write(metrics)
@@ -49,8 +58,9 @@ def write_metrics_report(metrics):
 
 
 """ Generate train loss/val loss graph """
-def generate_graph_report(num_epochs, train_loss, valid_loss):
 
+
+def generate_graph_report(num_epochs, train_loss, valid_loss):
     x = list(range(1, num_epochs + 1))
 
     plt.plot(x, train_loss, color='r', label='Train Loss')
@@ -63,9 +73,11 @@ def generate_graph_report(num_epochs, train_loss, valid_loss):
     plt.legend()
     plt.savefig('training_graph.png', bbox_inches='tight')
     plt.show()
-    
+
 
 """ Generate a folder name based in the existing folders """
+
+
 def generate_folder_name(folder):
     number_of_dirs = 0
     for base, dirs, files in os.walk(folder):
@@ -74,14 +86,15 @@ def generate_folder_name(folder):
             number_of_dirs += 1
             if str(number_of_dirs) in directories:
                 number_of_dirs += 1
-    
+
     return f"report{number_of_dirs:03}"
 
+
 """ Blob detection function """
+
+
 def get_image_keypoints(mask):
     inv_image = cv2.bitwise_not(mask)
     detector = cv2.SimpleBlobDetector_create()
-    
+
     return detector.detect(inv_image)
-
-
