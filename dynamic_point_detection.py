@@ -1,8 +1,9 @@
 import cv2
 import torch
 import numpy as np
-from model import build_unet
 import functions as fnc
+
+from model import build_unet
 
 
 def mask_parse(mask):

@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
-from model import build_unet
 import functions as fnc
+import torch
+
+from model import build_unet
 from glob import glob
 from tqdm import tqdm
-import torch
 
 
 def mask_parse(mask):

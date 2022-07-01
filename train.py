@@ -1,15 +1,13 @@
-import os
 import time
-from glob import glob
-
 import torch
-from torch.utils.data import DataLoader
-import torch.nn as nn
 
+from torch.utils.data import DataLoader
+from glob import glob
 from data import DriveDataset
 from model import build_unet
 from loss import DiceBCELoss
 from functions import generate_graph_report, seeding, make_dir, epoch_time, write_training_report
+
 
 def train(model, loader, optimizer, loss_fn, device):
     epoch_loss = 0.0
@@ -26,8 +24,9 @@ def train(model, loader, optimizer, loss_fn, device):
         optimizer.step()
         epoch_loss += loss.item()
 
-    epoch_loss = epoch_loss/len(loader)
+    epoch_loss = epoch_loss / len(loader)
     return epoch_loss
+
 
 def evaluate(model, loader, loss_fn, device):
     epoch_loss = 0.0
@@ -42,8 +41,9 @@ def evaluate(model, loader, loss_fn, device):
             loss = loss_fn(y_pred, y)
             epoch_loss += loss.item()
 
-        epoch_loss = epoch_loss/len(loader)
+        epoch_loss = epoch_loss / len(loader)
     return epoch_loss
+
 
 if __name__ == "__main__":
     """ Seeding """
@@ -114,14 +114,14 @@ if __name__ == "__main__":
 
             best_valid_loss = valid_loss
             torch.save(model.state_dict(), checkpoint_path)
-        
+
         else:
             data_str = f"Valid loss not improved"
 
         end_time = time.time()
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
-        data_str += f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s\n'
+        data_str += f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s\n'
         data_str += f'\tTrain Loss: {train_loss:.3f}\n'
         data_str += f'\t Val. Loss: {valid_loss:.3f}\n'
         print(data_str)
