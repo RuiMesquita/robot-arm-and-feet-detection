@@ -110,7 +110,7 @@ celerybeat.pid
 .env
 .venv
 env/
-venv/
+venv/feet-segmentation-env/
 ENV/
 env.bak/
 venv.bak/
