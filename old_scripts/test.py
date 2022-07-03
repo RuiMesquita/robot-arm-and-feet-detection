@@ -3,15 +3,13 @@ import time
 import numpy as np
 import cv2
 import torch
-import matplotlib.pyplot as plt
 
 from operator import add
 from glob import glob
 from tqdm import tqdm
-from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score, \
-    PrecisionRecallDisplay
+from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score
 from model import build_unet
-from functions import make_dir, seeding, write_metrics_report, generate_folder_name, get_image_keypoints
+from functions import make_dir, seeding, write_metrics_report, generate_folder_name
 
 
 def calculate_metrics(y_true, y_pred):
@@ -42,23 +40,6 @@ def mask_parse(mask):
     return mask
 
 
-def calculate_precision_recall_curve(y_true, y_pred):
-    """ Ground truth """
-    y_true = y_true.cpu().numpy()
-    y_true = y_true > 0.5
-    y_true = y_true.astype(np.uint8)
-    y_true = y_true.reshape(-1)
-
-    """ Prediction """
-    y_pred = y_pred.cpu().numpy()
-    y_pred = y_pred > 0.5
-    y_pred = y_pred.astype(np.uint8)
-    y_pred = y_pred.reshape(-1)
-
-    PrecisionRecallDisplay.from_predictions(y_true, y_pred)
-    plt.show()
-
-
 if __name__ == "__main__":
     """ seeding """
     seeding(42)
@@ -74,7 +55,7 @@ if __name__ == "__main__":
     H = 512
     W = 512
     size = (W, H)
-    checkpoint_path = "target/model_1.3.0.pth"
+    checkpoint_path = "../target/model_1.3.0.pth"
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -84,7 +65,6 @@ if __name__ == "__main__":
     model.eval()
 
     metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0]
-    points_predicted_per_image = []
     time_taken = []
 
     report_name = generate_folder_name("results/")
@@ -126,26 +106,10 @@ if __name__ == "__main__":
 
         ori_mask = mask_parse(mask)
         pred_y = mask_parse(pred_y)
-        pred_y = pred_y * 255
-
-        ai_segmentation = cv2.addWeighted(image, 1, pred_y, 1, 0)
-        manual_segmentation = cv2.addWeighted(image, 1, ori_mask, 1, 0)
-
-        keypoints = get_image_keypoints(pred_y)
-        percentage_points_predicted = len(keypoints) / 18
-        points_predicted_per_image.append(percentage_points_predicted)
-
-        for keypoint in keypoints:
-            x = int(keypoint.pt[0])
-            y = int(keypoint.pt[1])
-            s = keypoint.size
-
-            cv2.putText(ai_segmentation, f"({x}, {y})", (x - 10, y - 10), cv2.FONT_ITALIC, 0.2, color=(100, 100, 100))
-
         line = np.ones((size[1], 10, 3)) * 128
 
         cat_images = np.concatenate(
-            [manual_segmentation, line, ai_segmentation], axis=1
+            [image, line, ori_mask, line, pred_y * 255], axis=1
         )
 
         make_dir(f"results/{report_name}")
@@ -156,9 +120,8 @@ if __name__ == "__main__":
     recall = metrics_score[2] / len(test_x)
     precision = metrics_score[3] / len(test_x)
     acc = metrics_score[4] / len(test_x)
-    points_detected = sum(points_predicted_per_image) / 20
 
-    metrics = f"Jaccard: {jaccard:1.4f}\nF1: {f1:1.4f}\nRecall: {recall:1.4f}\nPrecision: {precision:1.4f}\nAcc: {acc:1.4f}\nPoints: {points_detected:1.4f}"
+    metrics = f"Jaccard: {jaccard:1.4f}\nF1: {f1:1.4f}\nRecall: {recall:1.4f}\nPrecision: {precision:1.4f}\nAcc: {acc:1.4f}"
 
     os.chdir(f"results/{report_name}")
     write_metrics_report(metrics)

@@ -94,7 +94,19 @@ def generate_folder_name(folder):
 
 
 def get_image_keypoints(mask):
+    params = cv2.SimpleBlobDetector_Params()
+
+    params.minThreshold = 0
+    params.maxThreshold = 255
+
+    params.filterByColor = False
+    params.filterByArea = True
+    params.minArea = 4
+    params.filterByCircularity = False
+    params.filterByInertia = False
+    params.filterByConvexity = False
+
     inv_image = cv2.bitwise_not(mask)
-    detector = cv2.SimpleBlobDetector_create()
+    detector = cv2.SimpleBlobDetector_create(params)
 
     return detector.detect(inv_image)
