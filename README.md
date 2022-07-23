@@ -3,6 +3,7 @@
 ---
 
  (project-summary)
+ # TODO SegNet e Deeplab, Multiresunet
 
 
 ## Get started
