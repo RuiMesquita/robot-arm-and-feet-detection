@@ -1,6 +1,5 @@
 import os
 import random
-import glob
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
