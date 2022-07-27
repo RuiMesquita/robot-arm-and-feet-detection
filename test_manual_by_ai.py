@@ -11,7 +11,7 @@ from tqdm import tqdm
 from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score, \
     PrecisionRecallDisplay
 from model import build_unet
-from functions import make_dir, seeding, write_metrics_report, generate_folder_name, get_image_keypoints
+from functions import make_dir, seeding, write_metrics_report, generate_folder_name, get_image_keypoints, validate_model_exists
 
 
 def calculate_metrics(y_true, y_pred):
@@ -60,11 +60,16 @@ def calculate_precision_recall_curve(y_true, y_pred):
 
 
 if __name__ == "__main__":
+    """ Ask for model name """
+    model_name = input("Model to use: ")
+    while(validate_model_exists(model_name) != True):
+        model_name = input("Model to use: ")
+
     """ seeding """
     seeding(42)
 
     """ Folders """
-    make_dir("../results")
+    make_dir("results")
 
     """ Load the dataset """
     test_x = sorted(glob("./data/test/images/*"))
@@ -74,7 +79,7 @@ if __name__ == "__main__":
     H = 512
     W = 512
     size = (W, H)
-    checkpoint_path = "target/model_1.3.0.pth"
+    checkpoint_path = f"target/{model_name}.pth"
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

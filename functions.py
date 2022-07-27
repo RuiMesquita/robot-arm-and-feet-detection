@@ -1,5 +1,6 @@
 import os
 import random
+import glob
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -110,3 +111,16 @@ def get_image_keypoints(mask):
     detector = cv2.SimpleBlobDetector_create(params)
 
     return detector.detect(inv_image)
+
+
+""" validate that selected model exist """
+
+
+def validate_model_exists(model_name):
+    if os.path.exists(f"target/{model_name}.pth"):
+        return True
+    else:
+        print("Invalid model file. Valid models: \n")
+        valid_models = os.listdir('./target')
+        print(valid_models)
+        return False

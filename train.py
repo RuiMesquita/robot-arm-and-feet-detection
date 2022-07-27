@@ -46,6 +46,9 @@ def evaluate(model, loader, loss_fn, device):
 
 
 if __name__ == "__main__":
+    """ Ask for model name """
+    model_name = input("Model name to be saved: ")
+
     """ Seeding """
     seeding(42)
 
@@ -69,7 +72,7 @@ if __name__ == "__main__":
     batch_size = 2
     num_epochs = 50
     lr = 1e-4
-    checkpoint_path = "target/model_1.3.0.pth"
+    checkpoint_path = f"target/{model_name}.pth"
 
     """ Dataset and loader """
     train_dataset = DriveDataset(train_x, train_y)
