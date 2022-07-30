@@ -1,7 +1,8 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import cv2
-import statistics
+import pandas as pd
+import os
 
 
 class customMetrics:
@@ -92,34 +93,49 @@ class customMetrics:
         return len(self.points)
 
 
-def box_plotting(array):
-
-    sns.boxplot(y=array)
+def box_plotting(dataframe):
+    
+    sns.boxplot(data=dataframe)
     plt.show()
 
 
 if __name__ == '__main__':
-    img = cv2.imread('./results/report004/mask_over_image0.png')
 
-    # call class customMetrics
-    metrics = customMetrics(img)
+    total_points = []
+    left_points = []
+    right_points = []
+    heel_points = []
+    plantar_points = []
+    finger_points = []
 
-    # trigger the filter to get all the points
-    metrics.blob_filter()
+    for filename in os.listdir("results/report010"):
+        img = cv2.imread(os.path.join("results/report010", filename))
 
-    # custom metrics
-    print("All: ", metrics.get_all_points())
-    print("Left", metrics.get_left_feet_points())
-    print("Right", metrics.get_right_feet_points())
-    print("Heel", metrics.get_heel_points())
-    print("Plantar", metrics.get_plantar_points())
-    print("Finger:", metrics.get_finger_points())
+        # call class customMetrics
+        metrics = customMetrics(img)
 
-    y = [1, 2, 4, 6, 8, 3, 6, 3, 8, 2, 8, 3, 9, 3, 9, 3, 9]
-    box_plotting(y)
+        # trigger the filter to get all the points
+        metrics.blob_filter()
 
-    y = statistics.mean(y)
-    print(y)
+        # custom metrics
+        print("All:", metrics.get_all_points())
+        print("Left:", metrics.get_left_feet_points())
+        print("Right:", metrics.get_right_feet_points())
+        print("Heel:", metrics.get_heel_points())
+        print("Plantar:", metrics.get_plantar_points())
+        print("Finger:", metrics.get_finger_points(),"\n")
 
+        total_points.append(metrics.get_all_points())
+        left_points.append(metrics.get_left_feet_points())
+        right_points.append(metrics.get_right_feet_points())
+        heel_points.append(metrics.get_heel_points())
+        plantar_points.append(metrics.get_plantar_points())
+        finger_points.append(metrics.get_finger_points())
 
+        labels = ["All", "Left", "Right", "Heel", "Plantar", "Finger"]
 
+    d = {'All': total_points, 'Left': left_points, 'Right': right_points, 'Heel': heel_points, 'Plantar': plantar_points, "Finger": finger_points}
+    df = pd.DataFrame(data=d)
+    print(df)
+
+    box_plotting(df)

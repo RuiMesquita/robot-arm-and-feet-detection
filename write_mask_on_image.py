@@ -31,7 +31,7 @@ if __name__ == "__main__":
     H = 512
     W = 512
     size = (W, H)
-    checkpoint_path = "target/model_1.3.0.pth"
+    checkpoint_path = "target/unet_9p_50.pth"
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -81,6 +81,6 @@ if __name__ == "__main__":
         image_overlayed = cv2.addWeighted(image, 1, pred_y*255, 1, 0)
         
         make_dir(f"results/{report_name}")
-        cv2.imwrite(f"results/{report_name}/{name}.png", image_overlayed)
+        cv2.imwrite(f"results/{report_name}/{name}.png", pred_y*255)
 
     os.chdir(f"./results/{report_name}")
