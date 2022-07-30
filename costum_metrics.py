@@ -1,4 +1,7 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
 import cv2
+import statistics
 
 
 class customMetrics:
@@ -89,6 +92,12 @@ class customMetrics:
         return len(self.points)
 
 
+def box_plotting(array):
+
+    sns.boxplot(y=array)
+    plt.show()
+
+
 if __name__ == '__main__':
     img = cv2.imread('./results/report004/mask_over_image0.png')
 
@@ -105,3 +114,12 @@ if __name__ == '__main__':
     print("Heel", metrics.get_heel_points())
     print("Plantar", metrics.get_plantar_points())
     print("Finger:", metrics.get_finger_points())
+
+    y = [1, 2, 4, 6, 8, 3, 6, 3, 8, 2, 8, 3, 9, 3, 9, 3, 9]
+    box_plotting(y)
+
+    y = statistics.mean(y)
+    print(y)
+
+
+
