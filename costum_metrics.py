@@ -108,8 +108,8 @@ if __name__ == '__main__':
     plantar_points = []
     finger_points = []
 
-    for filename in os.listdir("results/report010"):
-        img = cv2.imread(os.path.join("results/report010", filename))
+    for filename in os.listdir("results/report004"):
+        img = cv2.imread(os.path.join("results/report004", filename))
 
         # call class customMetrics
         metrics = customMetrics(img)
@@ -118,23 +118,31 @@ if __name__ == '__main__':
         metrics.blob_filter()
 
         # custom metrics
-        print("All:", metrics.get_all_points())
-        print("Left:", metrics.get_left_feet_points())
-        print("Right:", metrics.get_right_feet_points())
-        print("Heel:", metrics.get_heel_points())
-        print("Plantar:", metrics.get_plantar_points())
-        print("Finger:", metrics.get_finger_points(),"\n")
+        all_p = metrics.get_all_points()
+        left_p = metrics.get_left_feet_points()
+        right_p = metrics.get_right_feet_points()
+        heel_p = metrics.get_heel_points()
+        plantar_p = metrics.get_plantar_points()
+        finger_p = metrics.get_finger_points()
 
-        total_points.append(metrics.get_all_points())
-        left_points.append(metrics.get_left_feet_points())
-        right_points.append(metrics.get_right_feet_points())
-        heel_points.append(metrics.get_heel_points())
-        plantar_points.append(metrics.get_plantar_points())
-        finger_points.append(metrics.get_finger_points())
+        print("All:", all_p)
+        print("Left:", left_p)
+        print("Right:", right_p)
+        print("Heel:", heel_p)
+        print("Plantar:", plantar_p)
+        print("Finger:", finger_p, "\n")
+
+        total_points.append(all_p)
+        left_points.append(left_p)
+        right_points.append(right_p)
+        heel_points.append(heel_p)
+        plantar_points.append(plantar_p)
+        finger_points.append(finger_p)
 
         labels = ["All", "Left", "Right", "Heel", "Plantar", "Finger"]
 
-    d = {'All': total_points, 'Left': left_points, 'Right': right_points, 'Heel': heel_points, 'Plantar': plantar_points, "Finger": finger_points}
+    d = {'All': total_points, 'Left': left_points, 'Right': right_points, 'Heel': heel_points,
+         'Plantar': plantar_points, "Finger": finger_points}
     df = pd.DataFrame(data=d)
     print(df)
 
