@@ -10,16 +10,15 @@ import pandas as pd
 from operator import add
 from glob import glob
 from tqdm import tqdm
-from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score, \
-    PrecisionRecallDisplay
+from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score
 from model import build_unet
 from functions import make_dir, seeding, write_metrics_report, generate_folder_name, get_image_keypoints, \
     validate_model_exists
-from costum_metrics import customMetrics
+from custom_metrics import customMetrics
 
 
 def box_plotting(dataframe, dirname):
-    sns.boxplot(data=dataframe)
+    sns.boxplot(data=dataframe, orient='h')
 
     os.chdir(f"results/{dirname}")
     plt.savefig('CustomMetrics.png', bbox_inches='tight')
@@ -75,23 +74,6 @@ def mask_parse(mask):
     mask = np.expand_dims(mask, axis=-1)
     mask = np.concatenate([mask, mask, mask], axis=-1)
     return mask
-
-
-def calculate_precision_recall_curve(y_true, y_pred):
-    """ Ground truth """
-    y_true = y_true.cpu().numpy()
-    y_true = y_true > 0.5
-    y_true = y_true.astype(np.uint8)
-    y_true = y_true.reshape(-1)
-
-    """ Prediction """
-    y_pred = y_pred.cpu().numpy()
-    y_pred = y_pred > 0.5
-    y_pred = y_pred.astype(np.uint8)
-    y_pred = y_pred.reshape(-1)
-
-    PrecisionRecallDisplay.from_predictions(y_true, y_pred)
-    plt.show()
 
 
 if __name__ == "__main__":

@@ -77,6 +77,9 @@ class customMetrics:
             if min_y + (0.9 * foot_height) > y > min_y + (foot_height * 0.4):
                 self.plantar_points.append(point)
 
+            bot = int(min_y + (0.9 * foot_height))
+            top = int(min_y + (foot_height * 0.4))
+
         return len(self.plantar_points)
 
     def get_finger_points(self):

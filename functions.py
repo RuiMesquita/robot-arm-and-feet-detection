@@ -9,9 +9,7 @@ import cv2
 
 
 def make_dir(path):
-    if os.path.exists(path):
-        print("The Specified dir already exists")
-    else:
+    if not os.path.exists(path):
         os.mkdir(path)
 
 
