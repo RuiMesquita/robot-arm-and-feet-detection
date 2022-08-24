@@ -132,7 +132,7 @@ if __name__ == '__main__':
         plantar_points.append(metrics.get_plantar_points())
         finger_points.append(metrics.get_finger_points())
 
-        labels = ["All", "Left", "Right", "Heel", "Plantar", "Finger"]
+    labels = ["All", "Left", "Right", "Heel", "Plantar", "Finger"]
 
     d = {'All': total_points, 'Left': left_points, 'Right': right_points, 'Heel': heel_points, 'Plantar': plantar_points, "Finger": finger_points}
     df = pd.DataFrame(data=d)
