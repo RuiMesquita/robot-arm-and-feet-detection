@@ -43,7 +43,7 @@ def mask_parse(mask):
 if __name__ == "__main__":
     """ Ask for model name """
     model_name = input("Model to use: ")
-    while(validate_model_exists(model_name) != True):
+    while not validate_model_exists(model_name):
         model_name = input("Model to use: ")
 
     """ seeding """

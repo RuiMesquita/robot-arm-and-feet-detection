@@ -4,14 +4,48 @@ import numpy as np
 import cv2
 import torch
 import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
 
 from operator import add
 from glob import glob
 from tqdm import tqdm
-from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score, \
-    PrecisionRecallDisplay
+from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score
 from model import build_unet
-from functions import make_dir, seeding, write_metrics_report, generate_folder_name, get_image_keypoints, validate_model_exists
+from functions import make_dir, seeding, write_metrics_report, generate_folder_name, get_image_keypoints, \
+    validate_model_exists
+from custom_metrics import customMetrics
+
+
+def box_plotting(dataframe, dirname):
+    sns.boxplot(data=dataframe, orient='h')
+
+    os.chdir(f"results/{dirname}")
+    plt.savefig('CustomMetrics.png', bbox_inches='tight')
+    os.chdir(f"../../")
+
+
+def calculate_custom_metrics(prediction_mask):
+    # call class customMetrics
+    metrics = customMetrics(prediction_mask)
+
+    # trigger the filter to get all the points
+    metrics.blob_filter()
+
+    # custom metrics
+    all_p = metrics.get_all_points()
+    left_p = metrics.get_left_feet_points()
+    right_p = metrics.get_right_feet_points()
+    heel_p = metrics.get_heel_points()
+    plantar_p = metrics.get_plantar_points()
+    finger_p = metrics.get_finger_points()
+
+    total_points.append(all_p)
+    left_points.append(left_p)
+    right_points.append(right_p)
+    heel_points.append(heel_p)
+    plantar_points.append(plantar_p)
+    finger_points.append(finger_p)
 
 
 def calculate_metrics(y_true, y_pred):
@@ -42,27 +76,18 @@ def mask_parse(mask):
     return mask
 
 
-def calculate_precision_recall_curve(y_true, y_pred):
-    """ Ground truth """
-    y_true = y_true.cpu().numpy()
-    y_true = y_true > 0.5
-    y_true = y_true.astype(np.uint8)
-    y_true = y_true.reshape(-1)
-
-    """ Prediction """
-    y_pred = y_pred.cpu().numpy()
-    y_pred = y_pred > 0.5
-    y_pred = y_pred.astype(np.uint8)
-    y_pred = y_pred.reshape(-1)
-
-    PrecisionRecallDisplay.from_predictions(y_true, y_pred)
-    plt.show()
-
-
 if __name__ == "__main__":
+
+    total_points = []
+    left_points = []
+    right_points = []
+    heel_points = []
+    plantar_points = []
+    finger_points = []
+
     """ Ask for model name """
     model_name = input("Model to use: ")
-    while(validate_model_exists(model_name) != True):
+    while not validate_model_exists(model_name):
         model_name = input("Model to use: ")
 
     """ seeding """
@@ -133,12 +158,12 @@ if __name__ == "__main__":
         pred_y = mask_parse(pred_y)
         pred_y = pred_y * 255
 
+        calculate_custom_metrics(pred_y)
+
         ai_segmentation = cv2.addWeighted(image, 1, pred_y, 1, 0)
         manual_segmentation = cv2.addWeighted(image, 1, ori_mask, 1, 0)
 
         keypoints = get_image_keypoints(pred_y)
-        percentage_points_predicted = len(keypoints) / 18
-        points_predicted_per_image.append(percentage_points_predicted)
 
         for keypoint in keypoints:
             x = int(keypoint.pt[0])
@@ -161,9 +186,15 @@ if __name__ == "__main__":
     recall = metrics_score[2] / len(test_x)
     precision = metrics_score[3] / len(test_x)
     acc = metrics_score[4] / len(test_x)
-    points_detected = sum(points_predicted_per_image) / 20
 
-    metrics = f"Jaccard: {jaccard:1.4f}\nF1: {f1:1.4f}\nRecall: {recall:1.4f}\nPrecision: {precision:1.4f}\nAcc: {acc:1.4f}\nPoints: {points_detected:1.4f}"
+    d = {'All': total_points, 'Left': left_points, 'Right': right_points, 'Heel': heel_points,
+         'Plantar': plantar_points, "Finger": finger_points}
+    df = pd.DataFrame(data=d)
+    print(df)
+
+    box_plotting(df, report_name)
+
+    metrics = f"Jaccard: {jaccard:1.4f}\nF1: {f1:1.4f}\nRecall: {recall:1.4f}\nPrecision: {precision:1.4f}\nAcc: {acc:1.4f}\n"
 
     os.chdir(f"results/{report_name}")
     write_metrics_report(metrics)
