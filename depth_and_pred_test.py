@@ -12,6 +12,19 @@ def mask_parse(mask):
     mask = np.concatenate([mask, mask, mask], axis=-1)
     return mask
 
+def calculate_roi_position(x, y, size):
+    x = round(x/512, 2)
+    y = round(y/512, 2)
+    radius = round(size/512, 2)
+    radius = round(radius/2, 2)
+
+    xmin = x - radius
+    ymin = y - radius
+    xmax = x + radius
+    ymax = y + radius
+
+    return [xmin, ymin, xmax, ymax]
+
 
 """ Hyperparameters """
 H = 512
@@ -55,12 +68,13 @@ monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
 monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
 # RGB Camera
+rgbCam.setBoardSocket(dai.CameraBoardSocket.RGB)
 rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 rgbCam.setPreviewSize(512, 512)
 rgbCam.preview.link(xoutRgb.input)
 
 outputDepth = True
-outputRectified = False
+outputRectified = True
 lrcheck = False
 subpixel = False
 
@@ -123,23 +137,6 @@ with dai.Device(pipeline) as device:
         # get spatial location data
         spatialData = inDepthAvg.getSpatialLocations()
 
-        for depthData in spatialData:
-            
-            # define roi dimensions
-            roi = depthData.config.roi
-            roi = roi.denormalize(width=depthFrameColor.shape[1], height=depthFrameColor.shape[0])
-            xmin = int(roi.topLeft().x)
-            ymin = int(roi.topLeft().y)
-            xmax = int(roi.bottomRight().x)
-            ymax = int(roi.bottomRight().y)
-
-            # output roi to frame and spatial coordinates
-            fontType = cv2.FONT_HERSHEY_TRIPLEX
-            cv2.rectangle(depthFrameColor, (xmin, ymin), (xmax, ymax), color, 2)
-            cv2.putText(depthFrameColor, f"X: {int(depthData.spatialCoordinates.x)} mm", (xmin + 10, ymax + 20), fontType, 0.5, color)
-            cv2.putText(depthFrameColor, f"Y: {int(depthData.spatialCoordinates.y)} mm", (xmin + 10, ymax + 35), fontType, 0.5, color)
-            cv2.putText(depthFrameColor, f"Z: {int(depthData.spatialCoordinates.z)} mm", (xmin + 10, ymax + 50), fontType, 0.5, color)
-
         # operations on rgb frame
         image = cv2.resize(rgbFrame, size)
         x = np.transpose(image, (2, 0, 1))
@@ -171,7 +168,37 @@ with dai.Device(pipeline) as device:
             y = int(keypoint.pt[1])
             s = keypoint.size
 
+            roi_coordinates = calculate_roi_position(x, y, s)
+
+            topLeft.x = roi_coordinates[0]
+            topLeft.y = roi_coordinates[1]
+            bottomRight.x = roi_coordinates[2]
+            bottomRight.y = roi_coordinates[3]
+
+            config.roi = dai.Rect(topLeft, bottomRight)
+            cfg = dai.SpatialLocationCalculatorConfig()
+            cfg.addROI(config)
+            spatialCalcConfigInQueue.send(cfg)
+
             cv2.putText(image_overlayed, f"({x}, {y})", (x-10, y-10), cv2.FONT_HERSHEY_TRIPLEX, 0.3, color=(255, 255, 255))
+        
+            for depthData in spatialData:
+                # define roi dimensions
+                roi = depthData.config.roi
+                roi = roi.denormalize(width=depthFrameColor.shape[1], height=depthFrameColor.shape[0])
+                xmin = int(roi.topLeft().x)
+                ymin = int(roi.topLeft().y)
+                xmax = int(roi.bottomRight().x)
+                ymax = int(roi.bottomRight().y)
+
+                # output roi to frame and spatial coordinates
+                fontType = cv2.FONT_HERSHEY_TRIPLEX
+                cv2.rectangle(depthFrameColor, (xmin, ymin), (xmax, ymax), color, 2)
+                cv2.putText(depthFrameColor, f"X: {int(depthData.spatialCoordinates.x)} mm", (xmin + 10, ymax + 20), fontType, 0.5, color)
+                cv2.putText(depthFrameColor, f"Y: {int(depthData.spatialCoordinates.y)} mm", (xmin + 10, ymax + 35), fontType, 0.5, color)
+                cv2.putText(depthFrameColor, f"Z: {int(depthData.spatialCoordinates.z)} mm", (xmin + 10, ymax + 50), fontType, 0.5, color)
+                
+                print(f"X: {int(depthData.spatialCoordinates.x)} mm| Y: {int(depthData.spatialCoordinates.y)} mm | Z: {int(depthData.spatialCoordinates.z)} mm")
 
         cv2.imshow("Depth image", depthFrameColor)
         cv2.imshow("Real image", image_overlayed)
