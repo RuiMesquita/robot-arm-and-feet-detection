@@ -19,7 +19,7 @@ if __name__ == "__main__":
     fnc.seeding(42)
 
     """ Folders """
-    fnc.make_dir("../results")
+    fnc.make_dir("../reports")
 
     """ Load the dataset """
     test_x = sorted(glob("../data/test/images/*"))
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
     model.eval()
 
-    report_name = fnc.generate_folder_name("../results/")
+    report_name = fnc.generate_folder_name("../reports/")
 
     for i, (x, y) in tqdm(enumerate(zip(test_x, test_y)), total=len(test_x)):
             name = f"mask_over_image{i}"
@@ -85,5 +85,5 @@ if __name__ == "__main__":
 
                 cv2.putText(image_overlayed, f"({x}, {y})", (x-10, y-10), cv2.FONT_ITALIC, 0.2, color=(100, 100, 100))
 
-            fnc.make_dir(f'results/{report_name}')
-            cv2.imwrite(f"results/{report_name}/{name}.png", image_overlayed)
+            fnc.make_dir(f'reports/{report_name}')
+            cv2.imwrite(f"reports/{report_name}/{name}.png", image_overlayed)

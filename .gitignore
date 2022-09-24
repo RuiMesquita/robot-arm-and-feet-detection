@@ -29,7 +29,7 @@ feet_data/
 feet_data_9points/
 data/
 target/
-results/
+reports/
 MANIFEST
 
 # PyInstaller

@@ -18,7 +18,7 @@ from utils import custom_metrics
 def box_plotting(dataframe, dirname):
     sns.boxplot(data=dataframe, orient='h')
 
-    os.chdir(f"../results/{dirname}")
+    os.chdir(f"../reports/{dirname}")
     plt.savefig('CustomMetrics.png', bbox_inches='tight')
     os.chdir(f"../../")
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     functions.seeding(42)
 
     """ Folders """
-    functions.make_dir("results")
+    functions.make_dir("reports")
 
     """ Load the dataset """
     test_x = sorted(glob("./data/test/images/*"))
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     points_predicted_per_image = []
     time_taken = []
 
-    report_name = functions.generate_folder_name("results/")
+    report_name = functions.generate_folder_name("reports/")
 
     for i, (x, y) in tqdm(enumerate(zip(test_x, test_y)), total=len(test_x)):
         name = f"image_mask_pred_{i}"
@@ -183,8 +183,8 @@ if __name__ == "__main__":
             [manual_segmentation, line, ai_segmentation], axis=1
         )
 
-        functions.make_dir(f"./results/{report_name}")
-        cv2.imwrite(f"./results/{report_name}/{name}.png", cat_images)
+        functions.make_dir(f"./reports/{report_name}")
+        cv2.imwrite(f"./reports/{report_name}/{name}.png", cat_images)
 
     jaccard = metrics_score[0] / len(test_x)
     f1 = metrics_score[1] / len(test_x)
@@ -201,5 +201,5 @@ if __name__ == "__main__":
 
     metrics = f"Jaccard: {jaccard:1.4f}\nF1: {f1:1.4f}\nRecall: {recall:1.4f}\nPrecision: {precision:1.4f}\nAcc: {acc:1.4f}\n"
 
-    os.chdir(f"./results/{report_name}")
+    os.chdir(f"./reports/{report_name}")
     functions.write_metrics_report(metrics)

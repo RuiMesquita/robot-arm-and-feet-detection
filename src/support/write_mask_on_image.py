@@ -21,7 +21,7 @@ if __name__ == "__main__":
     seeding(42)
 
     """ Folders """
-    make_dir("../results")
+    make_dir("../reports")
 
     """ Load the dataset """
     test_x = sorted(glob("./data/test/images/*"))
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0]
     time_taken = []
 
-    report_name = generate_folder_name("results/")
+    report_name = generate_folder_name("reports/")
 
     for i, (x, y) in tqdm(enumerate(zip(test_x, test_y)), total=len(test_x)):
         name = f"mask_over_image{i}"
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         
         image_overlayed = cv2.addWeighted(image, 1, pred_y*255, 1, 0)
         
-        make_dir(f"results/{report_name}")
-        cv2.imwrite(f"results/{report_name}/{name}.png", pred_y*255)
+        make_dir(f"reports/{report_name}")
+        cv2.imwrite(f"reports/{report_name}/{name}.png", pred_y*255)
 
-    os.chdir(f"./results/{report_name}")
+    os.chdir(f"./reports/{report_name}")
