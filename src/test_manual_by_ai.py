@@ -3,13 +3,47 @@ import time
 import numpy as np
 import cv2
 import torch
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
 
 from operator import add
 from glob import glob
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score
 from model import build_unet
-from functions import make_dir, seeding, write_metrics_report, generate_folder_name, validate_model_exists
+from utils import functions
+from utils import custom_metrics
+
+def box_plotting(dataframe, dirname):
+    sns.boxplot(data=dataframe, orient='h')
+
+    os.chdir(f"../results/{dirname}")
+    plt.savefig('CustomMetrics.png', bbox_inches='tight')
+    os.chdir(f"../../")
+
+
+def calculate_custom_metrics(prediction_mask):
+    # call class customMetrics
+    metrics = custom_metrics.customMetrics(prediction_mask)
+
+    # trigger the filter to get all the points
+    metrics.blob_filter()
+
+    # custom metrics
+    all_p = metrics.get_all_points()
+    left_p = metrics.get_left_feet_points()
+    right_p = metrics.get_right_feet_points()
+    heel_p = metrics.get_heel_points()
+    plantar_p = metrics.get_plantar_points()
+    finger_p = metrics.get_finger_points()
+
+    total_points.append(all_p)
+    left_points.append(left_p)
+    right_points.append(right_p)
+    heel_points.append(heel_p)
+    plantar_points.append(plantar_p)
+    finger_points.append(finger_p)
 
 
 def calculate_metrics(y_true, y_pred):
@@ -41,16 +75,24 @@ def mask_parse(mask):
 
 
 if __name__ == "__main__":
+
+    total_points = []
+    left_points = []
+    right_points = []
+    heel_points = []
+    plantar_points = []
+    finger_points = []
+
     """ Ask for model name """
     model_name = input("Model to use: ")
-    while not validate_model_exists(model_name):
+    while not functions.validate_model_exists(model_name):
         model_name = input("Model to use: ")
 
     """ seeding """
-    seeding(42)
+    functions.seeding(42)
 
     """ Folders """
-    make_dir("results")
+    functions.make_dir("results")
 
     """ Load the dataset """
     test_x = sorted(glob("./data/test/images/*"))
@@ -60,7 +102,7 @@ if __name__ == "__main__":
     H = 512
     W = 512
     size = (W, H)
-    checkpoint_path = f"target/{model_name}.pth"
+    checkpoint_path = f"./target/{model_name}.pth"
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -70,9 +112,10 @@ if __name__ == "__main__":
     model.eval()
 
     metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0]
+    points_predicted_per_image = []
     time_taken = []
 
-    report_name = generate_folder_name("results/")
+    report_name = functions.generate_folder_name("results/")
 
     for i, (x, y) in tqdm(enumerate(zip(test_x, test_y)), total=len(test_x)):
         name = f"image_mask_pred_{i}"
@@ -111,14 +154,37 @@ if __name__ == "__main__":
 
         ori_mask = mask_parse(mask)
         pred_y = mask_parse(pred_y)
+        pred_y = pred_y * 255
+
+        calculate_custom_metrics(pred_y)
+
+        ai_segmentation = cv2.addWeighted(image, 1, pred_y, 1, 0)
+        manual_segmentation = cv2.addWeighted(image, 1, ori_mask, 1, 0)
+
+        keypoints = functions.get_image_keypoints(pred_y)
+        w_pixel, h_pixel = functions.get_yellow_squares_dimension(image)
+        w_real, h_real = 3.8, 3.8
+
+        for keypoint in keypoints:
+            x = int(keypoint.pt[0])
+            y = int(keypoint.pt[1])
+            s = keypoint.size
+
+            x_real, y_real = functions.calculate_real_coordinates(x, y, w_real, h_real, w_pixel, h_pixel)
+            x_real = int(x_real)
+            y_real = int(y_real)
+
+            cv2.putText(ai_segmentation, f"X: {x_real} cm", (x - 10, y - 10), cv2.FONT_ITALIC, 0.2, color=(100, 100, 100))
+            cv2.putText(ai_segmentation, f"Y: {y_real} cm", (x - 10, y - 20), cv2.FONT_ITALIC, 0.2, color=(100, 100, 100))
+
         line = np.ones((size[1], 10, 3)) * 128
 
         cat_images = np.concatenate(
-            [image, line, ori_mask, line, pred_y * 255], axis=1
+            [manual_segmentation, line, ai_segmentation], axis=1
         )
 
-        make_dir(f"results/{report_name}")
-        cv2.imwrite(f"results/{report_name}/{name}.png", cat_images)
+        functions.make_dir(f"./results/{report_name}")
+        cv2.imwrite(f"./results/{report_name}/{name}.png", cat_images)
 
     jaccard = metrics_score[0] / len(test_x)
     f1 = metrics_score[1] / len(test_x)
@@ -126,7 +192,14 @@ if __name__ == "__main__":
     precision = metrics_score[3] / len(test_x)
     acc = metrics_score[4] / len(test_x)
 
-    metrics = f"Jaccard: {jaccard:1.4f}\nF1: {f1:1.4f}\nRecall: {recall:1.4f}\nPrecision: {precision:1.4f}\nAcc: {acc:1.4f}"
+    d = {'All': total_points, 'Left': left_points, 'Right': right_points, 'Heel': heel_points,
+         'Plantar': plantar_points, "Finger": finger_points}
+    df = pd.DataFrame(data=d)
+    print(df)
 
-    os.chdir(f"results/{report_name}")
-    write_metrics_report(metrics)
+    box_plotting(df, report_name)
+
+    metrics = f"Jaccard: {jaccard:1.4f}\nF1: {f1:1.4f}\nRecall: {recall:1.4f}\nPrecision: {precision:1.4f}\nAcc: {acc:1.4f}\n"
+
+    os.chdir(f"./results/{report_name}")
+    functions.write_metrics_report(metrics)

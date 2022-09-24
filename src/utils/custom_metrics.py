@@ -111,8 +111,8 @@ if __name__ == '__main__':
     plantar_points = []
     finger_points = []
 
-    for filename in os.listdir("results/report004"):
-        img = cv2.imread(os.path.join("results/report004", filename))
+    for filename in os.listdir("../results/report004"):
+        img = cv2.imread(os.path.join("../results/report004", filename))
 
         # call class customMetrics
         metrics = customMetrics(img)

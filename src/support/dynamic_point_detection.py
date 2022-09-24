@@ -16,7 +16,7 @@ def mask_parse(mask):
 H = 512
 W = 512
 size = (W, H)
-checkpoint_path = "target/model_1.3.0.pth"
+checkpoint_path = "../target/unet_9p_50.pth"
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

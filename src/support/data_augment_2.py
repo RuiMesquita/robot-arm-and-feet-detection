@@ -47,21 +47,33 @@ def data_augment(images, masks, save_path, augment=True):
             x3 = augmented["image"]
             y3 = augmented["mask"]
 
-            aug = alb.Compose([
-                alb.OpticalDistortion(),
-                alb.GridDistortion(),
-            ])
+            aug = alb.GaussianBlur(blur_limit=(3, 7), p=1.0)
             augmented = aug(image=x, mask=y)
             x4 = augmented["image"]
             y4 = augmented["mask"]
 
-            aug = alb.HueSaturationValue(always_apply=True)
+            aug = alb.RandomBrightnessContrast(p=1.0)
             augmented = aug(image=x, mask=y)
             x5 = augmented["image"]
             y5 = augmented["mask"]
 
-            X = [x, x1, x2, x3, x4, x5]
-            Y = [y, y1, y2, y3, y4, y5]
+            aug = alb.RGBShift(p=1.0)
+            augmented = aug(image=x, mask=y)
+            x6 = augmented["image"]
+            y6 = augmented["mask"]
+
+            aug = alb.ElasticTransform(p=1.0)
+            augmented = aug(image=x, mask=y)
+            x7 = augmented["image"]
+            y7 = augmented["mask"]
+
+            aug = alb.HueSaturationValue(always_apply=True)
+            augmented = aug(image=x, mask=y)
+            x8 = augmented["image"]
+            y8 = augmented["mask"]
+
+            X = [x, x1, x2, x3, x4, x5, x6, x7, x8]
+            Y = [y, y1, y2, y3, y4, y5, y6, y7, y8]
 
         else:
             X = [x]

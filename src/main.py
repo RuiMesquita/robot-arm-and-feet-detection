@@ -1,7 +1,45 @@
+from operator import le
 import cv2
 import depthai as dai
+import torch
+import numpy as np
 
+from model import build_unet
+from utils import functions
+
+
+def mask_parse(mask):
+    mask = np.expand_dims(mask, axis=-1)
+    mask = np.concatenate([mask, mask, mask], axis=-1)
+    return mask
+
+def calculate_roi_position(x, y, size):
+    x = round(x/512, 2)
+    y = round(y/512, 2)
+    radius = round(size/512, 2)
+    radius = round(radius/2, 2)
+
+    xmin = x - radius
+    ymin = y - radius
+    xmax = x + radius
+    ymax = y + radius
+
+    return [xmin, ymin, xmax, ymax]
+
+
+""" Hyperparameters """
+H = 512
+W = 512
+size = (W, H)
+checkpoint_path = "target/unet_9p_20.pth"
 stepSize = 0.01
+torch_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+model = build_unet()
+model = model.to(torch_device)
+model.load_state_dict(torch.load(checkpoint_path, map_location=torch_device))
+model.eval()
+
 # Start defining a pipeline
 pipeline = dai.Pipeline()
 
@@ -31,12 +69,13 @@ monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
 monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
 # RGB Camera
+rgbCam.setBoardSocket(dai.CameraBoardSocket.RGB)
 rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 rgbCam.setPreviewSize(512, 512)
 rgbCam.preview.link(xoutRgb.input)
 
 outputDepth = True
-outputRectified = False
+outputRectified = True
 lrcheck = False
 subpixel = False
 
@@ -54,8 +93,8 @@ monoRight.out.link(stereo.right)
 spatialLocationCalculator.passthroughDepth.link(xoutDepth.input)
 stereo.depth.link(spatialLocationCalculator.inputDepth)
 
-topLeft = dai.Point2f(0.28, 0.48)
-bottomRight = dai.Point2f(0.32, 0.52)
+topLeft = dai.Point2f(0.45, 0.81)
+bottomRight = dai.Point2f(0.47, 0.83)
 
 spatialLocationCalculator.setWaitForConfigInput(False)
 config = dai.SpatialLocationCalculatorConfigData()
@@ -80,22 +119,68 @@ with dai.Device(pipeline) as device:
     color = (0, 255, 0)
 
     while True:
+
+        # get queues for different cameras
         inDepthAvg = spatialCalcQueue.get()
         inDepth = depthQueue.get()
         inRgb = rgbQueue.get()
 
+        # get frames for both images that we want to display
         rgbFrame = inRgb.getCvFrame()
-
-        # get frame and apply a color filter to it
         depthFrame = inDepth.getFrame()
+
+        # apply a color filter to depth frame
         depthFrameColor = cv2.normalize(depthFrame, None, 255, 0, cv2.NORM_INF, cv2.CV_8UC1)
         depthFrameColor = cv2.equalizeHist(depthFrameColor)
-        depthFrameColor = cv2.applyColorMap(depthFrameColor, cv2.COLORMAP_INFERNO)
+        depthFrameColor = cv2.applyColorMap(depthFrameColor, cv2.COLORMAP_JET)
+        depthFrameColor = cv2.resize(depthFrameColor, size)
 
+        # get spatial location data
         spatialData = inDepthAvg.getSpatialLocations()
-        #print(spatialData)
+
+        # operations on rgb frame
+        image = cv2.resize(rgbFrame, size)
+        x = np.transpose(image, (2, 0, 1))
+        x = x / 255.0
+        x = np.expand_dims(x, axis=0)
+        x = x.astype(np.float32)
+        x = torch.from_numpy(x)
+        x = x.to(torch_device)
+
+        with torch.no_grad():
+            pred_y = model(x)
+            pred_y = torch.sigmoid(pred_y)
+            pred_y = pred_y[0].cpu().numpy()
+            pred_y = np.squeeze(pred_y, axis=0)
+            pred_y = pred_y > 0.5
+            pred_y = np.array(pred_y, dtype=np.uint8)
+        
+        pred_y = mask_parse(pred_y)
+        pred_y = pred_y * 255
+
+        # Overlay the mask on top of the image
+        image_overlayed = cv2.addWeighted(image, 1, pred_y, 1, 0)
+
+        # Create annotations
+        keypoints = functions.get_image_keypoints(pred_y)
+        w_pixel, h_pixel = functions.get_yellow_squares_dimension(image)
+        w_real, h_real = 3.8, 3.8
+
+        for keypoint in keypoints:
+            x = int(keypoint.pt[0])
+            y = int(keypoint.pt[1])
+            s = keypoint.size
+
+            x_real, y_real = functions.calculate_real_coordinates(x, y, w_real, h_real, w_pixel, h_pixel)
+            x_real = int(x_real)
+            y_real = int(y_real)
+
+            cv2.putText(image_overlayed, f"X: {x_real} cm", (x - 10, y - 10), cv2.FONT_ITALIC, 0.2, color)
+            cv2.putText(image_overlayed, f"Y: {y_real} cm", (x - 10, y - 20), cv2.FONT_ITALIC, 0.2, color)
+
 
         for depthData in spatialData:
+            # define roi dimensions
             roi = depthData.config.roi
             roi = roi.denormalize(width=depthFrameColor.shape[1], height=depthFrameColor.shape[0])
             xmin = int(roi.topLeft().x)
@@ -103,19 +188,25 @@ with dai.Device(pipeline) as device:
             xmax = int(roi.bottomRight().x)
             ymax = int(roi.bottomRight().y)
 
+            # output roi to frame and spatial coordinates
             fontType = cv2.FONT_HERSHEY_TRIPLEX
-            cv2.rectangle(rgbFrame, (xmin, ymin), (xmax, ymax), color, 2)
-            cv2.putText(rgbFrame, f"X: {int(depthData.spatialCoordinates.x)} mm", (xmin + 10, ymax + 20), fontType, 0.5, color)
-            cv2.putText(rgbFrame, f"Y: {int(depthData.spatialCoordinates.y)} mm", (xmin + 10, ymax + 35), fontType, 0.5, color)
-            cv2.putText(rgbFrame, f"Z: {int(depthData.spatialCoordinates.z)} mm", (xmin + 10, ymax + 50), fontType, 0.5, color)
+            cv2.rectangle(depthFrameColor, (xmin, ymin), (xmax, ymax), color, 2)
+            cv2.putText(depthFrameColor, f"Z: {int(depthData.spatialCoordinates.z) * 0.1} cm", (xmin + 10, ymax + 50), fontType, 0.5, color)
+            
 
-        cv2.imshow("depth", depthFrameColor)
-        cv2.imshow("rgb", rgbFrame)
+        cv2.imshow("Depth image", depthFrameColor)
+        cv2.imshow("Real image", image_overlayed)
 
         newConfig = False
         key = cv2.waitKey(1)
         if key == ord('q'):
             break
+        elif key == ord('g'):
+            topLeft.x += 0.01
+            topLeft.y += 0.01
+            bottomRight.x -= 0.01
+            bottomRight.y -= 0.01
+            newConfig = True
         elif key == ord('w'):
             if topLeft.y - stepSize >= 0:
                 topLeft.y -= stepSize
@@ -136,18 +227,6 @@ with dai.Device(pipeline) as device:
                 topLeft.x += stepSize
                 bottomRight.x += stepSize
                 newConfig = True
-        elif key == ord('e'):
-            topLeft.x += 0.01
-            topLeft.y += 0.01
-            bottomRight.x -= 0.01
-            bottomRight.y -= 0.01
-            newConfig = True
-        elif key == ord('r'):
-            topLeft.x -= 0.01
-            topLeft.y -= 0.01
-            bottomRight.x += 0.01
-            bottomRight.y += 0.01
-            newConfig = True
         if newConfig:
             config.roi = dai.Rect(topLeft, bottomRight)
             cfg = dai.SpatialLocationCalculatorConfig()

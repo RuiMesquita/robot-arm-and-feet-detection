@@ -121,3 +121,45 @@ def validate_model_exists(model_name):
         valid_models = os.listdir('./target')
         print(valid_models)
         return False
+
+
+""" get yellow squares dimensions """
+
+
+def get_yellow_squares_dimension(img):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    lower_bound = np.array([20, 80, 80])   
+    upper_bound = np.array([40, 255, 255])
+
+    mask = cv2.inRange(hsv, lower_bound, upper_bound)
+    kernel = np.ones((7,7),np.uint8)
+
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    segmented_img = cv2.bitwise_and(img, img, mask=mask)
+
+    try:
+        contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        x,y,w,h = cv2.boundingRect(contours[0])
+        return w, h
+    except:
+        w = 0
+        h = 0
+        return w, h
+
+
+""" calculate real coords from pixel coords """
+
+
+def calculate_real_coordinates(x, y, w_real, h_real, w_pixel, h_pixel):
+
+
+    if h_pixel != 0 and w_pixel != 0:
+        x_real = round(x * (w_real/w_pixel), 3)
+        y_real = round(y * (h_real/h_pixel), 3)
+    else:
+        x_real = 0
+        y_real = 0
+
+    return x_real, y_real

@@ -3,10 +3,10 @@ import torch
 
 from torch.utils.data import DataLoader
 from glob import glob
-from data import DriveDataset
+from utils import data
 from model import build_unet
-from loss import DiceBCELoss
-from functions import generate_graph_report, seeding, make_dir, epoch_time, write_training_report
+from utils import loss
+from utils import functions
 
 
 def train(model, loader, optimizer, loss_fn, device):
@@ -50,10 +50,10 @@ if __name__ == "__main__":
     model_name = input("Model name to be saved: ")
 
     """ Seeding """
-    seeding(42)
+    functions.seeding(42)
 
     """ Directories """
-    make_dir("target")
+    functions.make_dir("target")
 
     """ Load dataset """
     train_x = sorted(glob("./data/train/images/*"))
@@ -69,14 +69,14 @@ if __name__ == "__main__":
     H = 512
     W = 512
     size = (H, W)
-    batch_size = 2
-    num_epochs = 50
+    batch_size = 3
+    num_epochs = 30
     lr = 1e-4
-    checkpoint_path = f"target/{model_name}.pth"
+    checkpoint_path = f"./target/{model_name}.pth"
 
     """ Dataset and loader """
-    train_dataset = DriveDataset(train_x, train_y)
-    valid_dataset = DriveDataset(valid_x, valid_y)
+    train_dataset = data.DriveDataset(train_x, train_y)
+    valid_dataset = data.DriveDataset(valid_x, valid_y)
 
     train_loader = DataLoader(
         dataset=train_dataset,
@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
-    loss_fn = DiceBCELoss()
+    loss_fn = loss.DiceBCELoss()
 
     """ Training the model """
     list_train_loss = []
@@ -122,7 +122,7 @@ if __name__ == "__main__":
             data_str = f"Valid loss not improved"
 
         end_time = time.time()
-        epoch_mins, epoch_secs = epoch_time(start_time, end_time)
+        epoch_mins, epoch_secs = functions.epoch_time(start_time, end_time)
 
         data_str += f'Epoch: {epoch + 1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s\n'
         data_str += f'\tTrain Loss: {train_loss:.3f}\n'
@@ -130,8 +130,8 @@ if __name__ == "__main__":
         print(data_str)
 
         """ Store data for the reports """
-        write_training_report(data_str)
+        functions.write_training_report(data_str)
         list_train_loss.append(train_loss)
         list_valid_loss.append(valid_loss)
 
-    generate_graph_report(num_epochs, list_train_loss, list_valid_loss)
+    functions.generate_graph_report(num_epochs, list_train_loss, list_valid_loss)

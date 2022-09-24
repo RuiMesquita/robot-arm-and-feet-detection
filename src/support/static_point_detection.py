@@ -22,14 +22,14 @@ if __name__ == "__main__":
     fnc.make_dir("../results")
 
     """ Load the dataset """
-    test_x = sorted(glob("./data/test/images/*"))
-    test_y = sorted(glob("./data/test/masks/*"))
+    test_x = sorted(glob("../data/test/images/*"))
+    test_y = sorted(glob("../data/test/masks/*"))
 
     """ Hyperparameters """
     H = 512
     W = 512
     size = (W, H)
-    checkpoint_path = "target/model_1.3.0.pth"
+    checkpoint_path = "../target/unet_9p_50.pth"
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
     model.eval()
 
-    report_name = fnc.generate_folder_name("results/")
+    report_name = fnc.generate_folder_name("../results/")
 
     for i, (x, y) in tqdm(enumerate(zip(test_x, test_y)), total=len(test_x)):
             name = f"mask_over_image{i}"

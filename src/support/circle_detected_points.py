@@ -8,10 +8,8 @@ import matplotlib.pyplot as plt
 from operator import add
 from glob import glob
 from tqdm import tqdm
-from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score, \
-    PrecisionRecallDisplay
 from model import build_unet
-from functions import make_dir, seeding, write_metrics_report, generate_folder_name, get_image_keypoints
+from functions import seeding, get_image_keypoints
 
 
 def mask_parse(mask):
@@ -32,7 +30,7 @@ if __name__ == "__main__":
     H = 512
     W = 512
     size = (W, H)
-    checkpoint_path = "target/model_1.3.0.pth"
+    checkpoint_path = "target/unet_9p_50.pth"
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

@@ -1,10 +1,10 @@
 import os
-import functions as fnc
 import cv2
 import imageio
 import numpy as np
 import albumentations as alb
 
+from utils import functions
 from tqdm import tqdm
 from glob import glob
 
@@ -47,38 +47,21 @@ def data_augment(images, masks, save_path, augment=True):
             x3 = augmented["image"]
             y3 = augmented["mask"]
 
-            aug = alb.GaussianBlur(blur_limit=(3, 7), p=1.0)
+            aug = alb.Compose([
+                alb.OpticalDistortion(),
+                alb.GridDistortion(),
+            ])
             augmented = aug(image=x, mask=y)
             x4 = augmented["image"]
             y4 = augmented["mask"]
 
-            aug = alb.RandomBrightness(p=1.0)
+            aug = alb.HueSaturationValue(always_apply=True)
             augmented = aug(image=x, mask=y)
             x5 = augmented["image"]
             y5 = augmented["mask"]
 
-            aug = alb.RGBShift(p=1.0)
-            augmented = aug(image=x, mask=y)
-            x6 = augmented["image"]
-            y6 = augmented["mask"]
-
-            aug = alb.RandomContrast(p=1.0)
-            augmented = aug(image=x, mask=y)
-            x7 = augmented["image"]
-            y7 = augmented["mask"]
-
-            aug = alb.ElasticTransform(p=1.0)
-            augmented = aug(image=x, mask=y)
-            x8 = augmented["image"]
-            y8 = augmented["mask"]
-
-            aug = alb.HistogramMatching(p=1.0)
-            augmented = aug(image=x, mask=y)
-            x9 = augmented["image"]
-            y9 = augmented["mask"]
-
-            X = [x, x1, x2, x3, x4, x5, x6, x7, x8, x9]
-            Y = [y, y1, y2, y3, y4, y5, y6, y7, y8, y9]
+            X = [x, x1, x2, x3, x4, x5]
+            Y = [y, y1, y2, y3, y4, y5]
 
         else:
             X = [x]
@@ -110,11 +93,11 @@ if __name__ == "__main__":
     print(f"Test: {len(test_x)} - {len(test_y)}")
 
     """ Crete New Directories for augmented data"""
-    fnc.make_dir("data/train/images/")
-    fnc.make_dir("data/train/masks/")
-    fnc.make_dir("data/test/images/")
-    fnc.make_dir("data/test/masks/")
+    functions.make_dir("./data/train/images/")
+    functions.make_dir("./data/train/masks/")
+    functions.make_dir("./data/test/images/")
+    functions.make_dir("./data/test/masks/")
 
     """ Augment data """
-    data_augment(train_x, train_y, "data/train/")
-    data_augment(test_x, test_y, "data/test/", augment=False)
+    data_augment(train_x, train_y, "./data/train/")
+    data_augment(test_x, test_y, "./data/test/", augment=False)
