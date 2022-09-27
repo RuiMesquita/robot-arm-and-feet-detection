@@ -153,8 +153,6 @@ def get_yellow_squares_dimension(img):
 
 
 def calculate_real_coordinates(x, y, w_real, h_real, w_pixel, h_pixel):
-
-
     if h_pixel != 0 and w_pixel != 0:
         x_real = round(x * (w_real/w_pixel), 3)
         y_real = round(y * (h_real/h_pixel), 3)
