@@ -1,11 +1,5 @@
 ## Feet Detection using u-net segmentation
 
----
-
- (project-summary)
- # TODO Copy the abstract from the main report
-
-
 ## Get started
 ### Activate environment:
 
